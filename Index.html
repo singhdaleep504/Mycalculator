@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Calculator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.7.0/math.js"></script>
+<style>
+:root {
+--bg-color: #1a1a1a;
+--button-color: #333;
+--text-color: #fff;
+}
+
+.calculator {
+width: 320px;
+margin: 2rem auto;
+background: var(--bg-color);
+padding: 20px;
+border-radius: 10px;
+box-shadow: 0 0 20px rgba(0,0,0,0.3);
+}
+
+#display {
+width: 100%;
+height: 60px;
+margin-bottom: 15px;
+padding: 10px;
+font-size: 24px;
+text-align: right;
+background: #222;
+border: none;
+color: var(--text-color);
+border-radius: 5px;
+}
+
+.history {
+color: #888;
+min-height: 20px;
+text-align: right;
+margin-bottom: 5px;
+font-size: 14px;
+}
+
+.buttons {
+display: grid;
+grid-template-columns: repeat(5, 1fr);
+gap: 5px;
+}
+
+button {
+padding: 15px;
+font-size: 18px;
+border: none;
+border-radius: 5px;
+cursor: pointer;
+background: var(--button-color);
+color: var(--text-color);
+transition: all 0.2s;
+}
+
+button:hover {
+filter: brightness(1.2);
+}
+
+.operator {
+background: #ff9500;
+}
+
+.scientific {
+background: #4a4a4a;
+font-size: 16px;
+}
+
+.equals {
+background: #007AFF;
+grid-column: span 2;
+}
+
+.error {
+color: #ff4444;
+animation: shake 0.5s;
+}
+
+@keyframes shake {
+0%, 100% { transform: translateX(0); }
+25% { transform: translateX(-5px); }
+75% { transform: translateX(5px); }
+}
+</style>
+</head>
+<body>
+<div class="calculator">
+<div class="history" id="history"></div>
+<input type="text" id="display" readonly>
+<div class="buttons">
+<!-- Scientific Functions -->
+<button class="scientific" onclick="addFunction('sqrt(')">√</button>
+<button class="scientific" onclick="addFunction('^')">x^y</button>
+<button class="scientific" onclick="addFunction('π')">π</button>
+<button class="scientific" onclick="addFunction('e')">e</button>
+<button class="scientific" onclick="clearDisplay()">C</button>
+
+<!-- Main Buttons -->
+<button onclick="addToDisplay('7')">7</button>
+<button onclick="addToDisplay('8')">8</button>
+<button onclick="addToDisplay('9')">9</button>
+<button class="operator" onclick="addToDisplay('/')">÷</button>
+<button class="scientific" onclick="addFunction('sin(')">sin</button>
+
+<button onclick="addToDisplay('4')">4</button>
+<button onclick="addToDisplay('5')">5</button>
+<button onclick="addToDisplay('6')">6</button>
+<button class="operator" onclick="addToDisplay('*')">×</button>
+<button class="scientific" onclick="addFunction('cos(')">cos</button>
+
+<button onclick="addToDisplay('1')">1</button>
+<button onclick="addToDisplay('2')">2</button>
+<button onclick="addToDisplay('3')">3</button>
+<button class="operator" onclick="addToDisplay('-')">-</button>
+<button class="scientific" onclick="addFunction('tan(')">tan</button>
+
+<button onclick="addToDisplay('0')">0</button>
+<button onclick="addToDisplay('.')">.</button>
+<button onclick="backspace()">⌫</button>
+<button class="operator" onclick="addToDisplay('+')">+</button>
+<button class="equals" onclick="calculate()">=</button>
+</div>
+</div>
+
+<script>
+const display = document.getElementById('display');
+const history = document.getElementById('history');
+let currentExpression = '';
+let lastResult = '';
+
+// Safe evaluation using math.js
+function safeEval(expr) {
+try {
+return math.evaluate(expr);
+} catch (error) {
+return error.message;
+}
+}
+
+function addToDisplay(value) {
+currentExpression += value;
+updateDisplay();
+}
+
+function addFunction(fn) {
+currentExpression += fn;
+updateDisplay();
+}
+
+function updateDisplay() {
+display.value = currentExpression;
+display.classList.remove('error');
+}
+
+function clearDisplay() {
+currentExpression = '';
+updateDisplay();
+}
+
+function backspace() {
+currentExpression = currentExpression.slice(0, -1);
+updateDisplay();
+}
+
+function calculate() {
+try {
+const result = safeEval(currentExpression);
+
+if (typeof result === 'number') {
+history.textContent = currentExpression + ' =';
+currentExpression = result.toString();
+updateDisplay();
+} else {
+throw new Error(result);
+}
+} catch (error) {
+display.classList.add('error');
+currentExpression = error.message;
+updateDisplay();
+setTimeout(clearDisplay, 2000);
+}
+}
+
+// Keyboard support
+document.addEventListener('keydown', (e) => {
+const key = e.key;
+
+if (key >= '0' && key <= '9' || key === '.') {
+addToDisplay(key);
+} else if ('+-*/'.includes(key)) {
+addToDisplay(key);
+} else if (key === 'Enter') {
+calculate();
+} else if (key === 'Backspace') {
+backspace();
+} else if (key === 'Escape') {
+clearDisplay();
+}
+});
+</script>
+</body>
+</html>
